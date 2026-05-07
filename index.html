@@ -147,7 +147,7 @@ body::after {
   border-radius: 50px;
   padding: clamp(6px,1vh,10px) clamp(12px,2.5vw,20px);
   font-family: 'Orbitron', monospace;
-  font-size: clamp(11px,1.8vw,14px); font-weight: 700;
+  font-size: clamp(20px,3vw,20px); font-weight: 700;
   color: var(--accent);
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
@@ -192,31 +192,158 @@ body::after {
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
 
 /* ══════════════════════════════════════════════════
-   TOAST
+   ALERT MODAL (replaces toast)
 ══════════════════════════════════════════════════ */
-#toast {
-  position: fixed; top: clamp(62px,9vh,80px); left: 50%;
-  transform: translateX(-50%) translateY(-12px);
-  background: var(--danger); color: #fff;
-  padding: clamp(10px,1.5vh,14px) clamp(18px,3vw,28px);
-  border-radius: 50px; font-size: clamp(12px,1.8vw,14px); font-weight: 600;
+#alert-overlay {
+  position: fixed; inset: 0;
+  background: rgba(10, 25, 60, 0.55);
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  z-index: 9800;
+  display: flex; align-items: center; justify-content: center;
   opacity: 0; pointer-events: none;
-  transition: all 0.38s cubic-bezier(0.34,1.56,0.64,1);
-  z-index: 9500; max-width: 88vw; text-align: center;
-  box-shadow: 0 8px 32px rgba(200,32,64,0.28);
-  white-space: nowrap;
+  transition: opacity 0.3s ease;
 }
-#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-#toast.info {
-  background: linear-gradient(135deg, #e0eeff, #cce0ff);
-  border: 1.5px solid rgba(20,102,200,0.28);
-  color: var(--accent);
-  box-shadow: 0 6px 24px rgba(20,102,200,0.2);
+#alert-overlay.visible {
+  opacity: 1; pointer-events: all;
 }
-#toast.success-toast {
-  background: linear-gradient(135deg, #d0ffec, #b8f5d8);
-  border: 1.5px solid rgba(10,136,80,0.3);
-  color: var(--success);
+
+.alert-box {
+  background: #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 32px 80px rgba(10,40,100,0.28), 0 8px 24px rgba(10,40,100,0.14);
+  padding: clamp(28px,5vh,44px) clamp(28px,6vw,52px);
+  width: clamp(280px, 80vw, 420px);
+  display: flex; flex-direction: column; align-items: center; gap: clamp(14px,2.5vh,22px);
+  position: relative;
+  transform: scale(0.88) translateY(12px);
+  transition: transform 0.38s cubic-bezier(0.34,1.56,0.64,1);
+  text-align: center;
+}
+#alert-overlay.visible .alert-box {
+  transform: scale(1) translateY(0);
+}
+
+.alert-icon-ring {
+  width: clamp(64px,12vw,88px); height: clamp(64px,12vw,88px);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(30px,5.5vw,44px);
+  flex-shrink: 0;
+}
+.alert-icon-ring.type-coin {
+  background: rgba(224,80,48,0.08);
+  border: 2.5px solid rgba(224,80,48,0.22);
+  animation: alertRing 2.2s ease-out infinite;
+}
+.alert-icon-ring.type-short {
+  background: rgba(184,128,0,0.08);
+  border: 2.5px solid rgba(184,128,0,0.25);
+  animation: alertRingGold 2.2s ease-out infinite;
+}
+@keyframes alertRing {
+  0%  { box-shadow: 0 0 0 0 rgba(224,80,48,0.3); }
+  70% { box-shadow: 0 0 0 clamp(10px,2vw,18px) rgba(224,80,48,0); }
+  100%{ box-shadow: 0 0 0 0 rgba(224,80,48,0); }
+}
+@keyframes alertRingGold {
+  0%  { box-shadow: 0 0 0 0 rgba(184,128,0,0.28); }
+  70% { box-shadow: 0 0 0 clamp(10px,2vw,18px) rgba(184,128,0,0); }
+  100%{ box-shadow: 0 0 0 0 rgba(184,128,0,0); }
+}
+
+.alert-headline {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(22px,4.5vw,34px);
+  letter-spacing: 3px;
+  line-height: 1.1;
+  color: var(--text);
+}
+.alert-headline.type-coin  { color: var(--accent2); }
+.alert-headline.type-short { color: var(--gold); }
+
+.alert-body {
+  font-size: clamp(13px,2vw,16px);
+  color: var(--text-soft);
+  line-height: 1.55;
+}
+
+/* ── Amount still needed pill ── */
+.alert-amount-pill {
+  display: flex; flex-direction: column; align-items: center;
+  background: linear-gradient(135deg, rgba(20,102,200,0.06), rgba(20,102,200,0.02));
+  border: 1.5px solid rgba(20,102,200,0.18);
+  border-radius: 18px;
+  padding: clamp(10px,1.8vh,16px) clamp(20px,4vw,36px);
+  gap: 2px; width: 100%;
+}
+.amount-pill-label {
+  font-size: clamp(9px,1.4vw,11px);
+  font-weight: 600; letter-spacing: 2.5px;
+  color: var(--muted); text-transform: uppercase;
+}
+.amount-pill-value {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(26px,5vw,38px); font-weight: 900;
+  color: var(--accent); line-height: 1;
+}
+.amount-pill-sub {
+  font-size: clamp(10px,1.5vw,12px);
+  color: var(--muted2); letter-spacing: 1px; margin-top: 2px;
+}
+
+/* ── Balance breakdown row ── */
+.alert-balance-row {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%;
+  background: rgba(10,40,100,0.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: clamp(8px,1.4vh,12px) clamp(14px,2.5vw,20px);
+  gap: 8px;
+}
+.bal-row-item { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; }
+.bal-row-label {
+  font-size: clamp(8px,1.1vw,10px); font-weight: 600;
+  letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase;
+}
+.bal-row-value {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(13px,2.2vw,17px); font-weight: 700;
+}
+.bal-row-value.have  { color: var(--danger); }
+.bal-row-value.need  { color: var(--gold); }
+.bal-row-value.price { color: var(--accent); }
+.bal-row-divider { width: 1px; height: 36px; background: var(--border); flex-shrink: 0; }
+
+/* ── OK button ── */
+.alert-ok-btn {
+  width: 100%;
+  padding: clamp(14px,2.2vh,20px);
+  border-radius: clamp(12px,2vw,16px); border: none;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-lt) 100%);
+  color: #ffffff; font-family: 'Orbitron', monospace;
+  font-size: clamp(12px,1.9vw,15px); font-weight: 900;
+  letter-spacing: 3px; cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 6px 24px rgba(20,102,200,0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+  margin-top: clamp(2px,0.4vh,6px);
+}
+.alert-ok-btn:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 12px 36px rgba(20,102,200,0.45), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.alert-ok-btn:active { transform: scale(0.97); transition-duration: 0.1s; }
+
+.alert-hint {
+  font-size: clamp(9px,1.3vw,11px); color: var(--muted2); letter-spacing: 1px;
+}
+.alert-hint kbd {
+  background: rgba(20,102,200,0.07);
+  border: 1px solid var(--border); border-bottom-width: 2px;
+  border-radius: 6px; padding: 0 6px;
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(8px,1.1vw,10px); color: var(--accent);
 }
 
 /* ══════════════════════════════════════════════════
@@ -762,12 +889,7 @@ body::after {
 .corner-tl { top: 16px; left: 16px; border-width: 2px 0 0 2px; border-radius: 5px 0 0 0; }
 .corner-br { bottom: 16px; right: 16px; border-width: 0 2px 2px 0; border-radius: 0 0 5px 0; }
 
-/* ══ RESPONSIVE BREAKPOINTS ══
-   Strategy: use vh for img-size so cards ALWAYS fit the visible height.
-   The card uses space-between so button always sticks to the bottom.
-═══════════════════════════════════════════════════════ */
-
-/* ── Very short screens (landscape phone, small kiosk) ── */
+/* ══ RESPONSIVE BREAKPOINTS ══ */
 @media (max-height: 480px) {
   :root { --img-size: clamp(48px, 13vh, 70px); }
   .drink-img-wrap  { margin-top: 16px; margin-bottom: 2px; }
@@ -776,38 +898,26 @@ body::after {
   .alc-btn         { width: clamp(76px,14vw,100px); height: clamp(76px,14vw,100px); }
   .alc-pct         { font-size: clamp(18px,3.5vw,26px); }
 }
-
-/* ── Short-medium (500–640px tall) ── */
 @media (min-height: 480px) and (max-height: 640px) {
   :root { --img-size: clamp(56px, 15vh, 80px); }
   .drink-img-wrap  { margin-top: 18px; margin-bottom: 3px; }
 }
-
-/* ── Medium height (640–800px) ── */
 @media (min-height: 640px) and (max-height: 800px) {
   :root { --img-size: clamp(64px, 17vh, 96px); }
 }
-
-/* ── Tall screens (800px+) ── */
 @media (min-height: 800px) {
   :root { --img-size: clamp(80px, 18vh, 115px); }
 }
-
-/* ── Very narrow screens ── */
 @media (max-width: 360px) {
   :root { --gap: 7px; }
   .drink-name      { font-size: 12px; letter-spacing: 1px; }
   .hint-bar        { display: none; }
   .logo            { font-size: 13px; }
 }
-
-/* ── Narrow (360–480px) ── */
 @media (max-width: 480px) {
   .hint-bar        { font-size: 9px; }
   .balance-pill    { padding: 6px 12px; font-size: 11px; }
 }
-
-/* ── Wide desktop (1200px+): cap card image so cards don't look sparse ── */
 @media (min-width: 1200px) {
   :root { --img-size: clamp(90px, 16vh, 115px); }
   #screen-select .content { padding: 14px 28px 12px; }
@@ -819,8 +929,44 @@ body::after {
 <div class="corner-br"></div>
 
 <div id="app">
-  <div id="toast"></div>
   <div id="pay-zone"></div>
+
+  <!-- ═══ ALERT MODAL ═══ -->
+  <div id="alert-overlay" role="dialog" aria-modal="true" aria-labelledby="alert-headline">
+    <div class="alert-box">
+      <div class="alert-icon-ring" id="alert-icon-ring">🪙</div>
+      <div class="alert-headline" id="alert-headline">INSERT COIN FIRST</div>
+      <div class="alert-body" id="alert-body">No coins inserted yet.<br>Tap the balance display at the top right to insert a ₱10 coin.</div>
+
+      <!-- Amount needed pill — shown only when balance is short -->
+      <div class="alert-amount-pill" id="alert-amount-pill" style="display:none">
+        <div class="amount-pill-label">STILL NEEDED</div>
+        <div class="amount-pill-value" id="alert-amount-value">₱0</div>
+        <div class="amount-pill-sub" id="alert-amount-sub">more to unlock this drink</div>
+      </div>
+
+      <!-- Balance breakdown row — shown only when balance is short -->
+      <div class="alert-balance-row" id="alert-balance-row" style="display:none">
+        <div class="bal-row-item">
+          <div class="bal-row-label">YOUR BALANCE</div>
+          <div class="bal-row-value have" id="alert-bal-have">₱0</div>
+        </div>
+        <div class="bal-row-divider"></div>
+        <div class="bal-row-item">
+          <div class="bal-row-label">DRINK PRICE</div>
+          <div class="bal-row-value price" id="alert-bal-price">₱70</div>
+        </div>
+        <div class="bal-row-divider"></div>
+        <div class="bal-row-item">
+          <div class="bal-row-label">NEED MORE</div>
+          <div class="bal-row-value need" id="alert-bal-need">₱70</div>
+        </div>
+      </div>
+
+      <button class="alert-ok-btn" onclick="closeAlert()">OK</button>
+      <div class="alert-hint">tap balance pill to add coins &nbsp;·&nbsp; <kbd>ESC</kbd> to dismiss</div>
+    </div>
+  </div>
 
   <!-- ═══ SCREEN 1: SELECT ═══ -->
   <div id="screen-select" class="screen active">
@@ -838,7 +984,7 @@ body::after {
       <div class="screen-title">SELECT YOUR <span>COCKTAIL</span></div>
       <div class="drinks-grid" id="drinks-grid"></div>
       <div class="hint-bar">
-        Tap <kbd>balance</kbd> or press <kbd>P</kbd> to insert coin (+₱10) &nbsp;·&nbsp; Price: <kbd>₱70</kbd>
+        <!-- Tap <kbd>balance</kbd> or press <kbd>P</kbd> to insert coin (+₱10) &nbsp;·&nbsp; Price: <kbd>₱70</kbd> -->
       </div>
     </div>
   </div>
@@ -881,17 +1027,17 @@ body::after {
       <button class="alc-btn" data-level="30" onclick="selectAlcohol(30)">
         <span class="alc-pct">30%</span>
         <span class="alc-label">STRONG</span>
-        <span class="alc-tag">🔥 FULL</span>
+        <span class="alc-tag">FULL</span>
       </button>
       <button class="alc-btn" data-level="15" onclick="selectAlcohol(15)">
         <span class="alc-pct">15%</span>
         <span class="alc-label">MEDIUM</span>
-        <span class="alc-tag">✨ CLASSIC</span>
+        <span class="alc-tag">CLASSIC</span>
       </button>
       <button class="alc-btn" data-level="5" onclick="selectAlcohol(5)">
         <span class="alc-pct">5%</span>
         <span class="alc-label">LIGHT</span>
-        <span class="alc-tag">🌿 MILD</span>
+        <span class="alc-tag">MILD</span>
       </button>
     </div>
     <button class="confirm-btn" id="confirm-alc-btn" onclick="confirmAlcohol()" disabled>
@@ -990,16 +1136,55 @@ function showScreen(id) {
 }
 
 /* ══════════════════════════════════════════
-   TOAST
+   ALERT MODAL
 ══════════════════════════════════════════ */
-let _toastTimer = null;
-function showToast(msg, type = 'error', ms = 2800) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = `show ${type === 'info' ? 'info' : type === 'ok' ? 'success-toast' : ''}`;
-  clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => { t.className = ''; }, ms);
+function showAlert(type) {
+  const overlay  = document.getElementById('alert-overlay');
+  const iconRing = document.getElementById('alert-icon-ring');
+  const headline = document.getElementById('alert-headline');
+  const body     = document.getElementById('alert-body');
+  const amtPill  = document.getElementById('alert-amount-pill');
+  const amtValue = document.getElementById('alert-amount-value');
+  const balRow   = document.getElementById('alert-balance-row');
+  const balHave  = document.getElementById('alert-bal-have');
+  const balPrice = document.getElementById('alert-bal-price');
+  const balNeed  = document.getElementById('alert-bal-need');
+
+  if (type === 'no-coin') {
+    iconRing.className = 'alert-icon-ring type-coin';
+    iconRing.textContent = '🪙';
+    headline.className = 'alert-headline type-coin';
+    headline.textContent = 'INSERT COIN FIRST';
+    body.innerHTML = 'No coins inserted yet.<br>Tap the <strong>balance display</strong> at the top right<br>to insert a ₱10 coin.';
+    amtPill.style.display = 'none';
+    balRow.style.display  = 'none';
+
+  } else if (type === 'insufficient') {
+    const needed = state.PRICE - state.balance;
+    iconRing.className = 'alert-icon-ring type-short';
+    iconRing.textContent = '⚠️';
+    headline.className = 'alert-headline type-short';
+    headline.textContent = 'INSUFFICIENT BALANCE';
+    body.innerHTML = 'You need more coins to order this drink.<br>Please insert additional coins to continue.';
+    amtPill.style.display = '';
+    amtValue.textContent  = `₱${needed}`;
+    balRow.style.display  = '';
+    balHave.textContent   = `₱${state.balance}`;
+    balPrice.textContent  = `₱${state.PRICE}`;
+    balNeed.textContent   = `₱${needed}`;
+  }
+
+  overlay.classList.add('visible');
 }
+
+function closeAlert() {
+  document.getElementById('alert-overlay').classList.remove('visible');
+}
+
+/* Close when tapping the backdrop */
+document.getElementById('alert-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeAlert();
+});
 
 /* ══════════════════════════════════════════
    BALANCE  (balance pill is clickable)
@@ -1054,11 +1239,11 @@ function renderDrinks() {
 function selectDrink(id) {
   state.selectedDrink = drinks.find(d => d.id === id);
   if (state.balance <= 0) {
-    showToast('⚠ Please Insert Coin First — ₱70 Required');
+    showAlert('no-coin');
     shakeCard('card-' + id); return;
   }
   if (state.balance < state.PRICE) {
-    showToast(`Insufficient balance — Need ₱${state.PRICE - state.balance} more`);
+    showAlert('insufficient');
     shakeCard('card-' + id); return;
   }
   state.balance -= state.PRICE;
@@ -1073,7 +1258,6 @@ function shakeCard(cardId) {
   el.style.animation = 'none';
   el.style.borderColor = 'var(--danger)';
   el.style.boxShadow = '0 0 0 3px rgba(200,32,64,0.18)';
-  // quick shake
   let frame = 0;
   const offsets = [0,-5,5,-4,4,-3,3,0];
   const shake = setInterval(() => {
@@ -1269,6 +1453,9 @@ document.addEventListener('keydown', e => {
   if (k === 'p') addBalance(10);
   if (e.key === '+') addBalance(50);
   if (k === 'r') orderAgain();
+  if (k === 'escape' || k === 'enter') {
+    if (document.getElementById('alert-overlay').classList.contains('visible')) closeAlert();
+  }
 });
 
 /* ══════════════════════════════════════════
